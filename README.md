@@ -1,2 +1,4 @@
 # Prediction-Assignment-Writeup
-Machine Learning Project 1
+This repository presents a model to predict how people exercise. To this aim, an analysis of the data from accelerometers on the belt, forearm, arm, and dumbbell of 6 people is performed. As described in Velloso et al. (2013), the five considered classes are: A, exactly according to the specification; B, throwing the elbows to the front; C, lifting the dumbbell only halfway; D, lowering the dumbbell only halfway; and E, throwing the hips to the front.
+
+Two models are tested following two algorithms (i.e., random forest and boosting). In each case, a cross-validation method is included in the development of the model. Additionally, the training data is divided into two sets to test the results. Due to the better performance of random forest, this model is selected to predict the class that describes the exercise.
