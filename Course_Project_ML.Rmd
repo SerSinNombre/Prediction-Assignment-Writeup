@@ -13,7 +13,7 @@ Two models are tested following two algorithms (i.e., random forest and boosting
 
 ## Loading the Data and preprocessing
 
-The data is loaded and pre-processed to eliminate columns that will not contribute to the prediction. This includes: (1) columns with data to characterize the user, (2) columns with a majority of absent values, and (3) columns with zero or near to zero variance.
+The data is loaded and pre-processed to eliminate columns that will not contribute to the prediction. This includes: (1) columns with data to characterize the user, (2) columns with a majority of absent values (using a threshold of at list 95% of the values being different to NAs), and (3) columns with zero or near to zero variance.
 
 ```{r loadData,echo=TRUE, warning=FALSE, message=FALSE}
 library(knitr);library(magrittr);library(nnet);library(dplyr);library(caret)
@@ -44,7 +44,7 @@ pml_test_s<-pml_test_s[,!(var_0$nzv |var_0$zeroVar)]
 ```
 
 ## Model
-To develop the model, two subsets are created to perform cross-validation, which will provide additional information to estimate the sample error. Following this, two algorithms are used. In each case, a cross-validation method is specified with the trainControl() function along with the number of cross-validation folds (i.e., 3). The end of the section presents the confusion matrices and accuracy for the developed models and the tested predictions.
+To develop the model, two subsets are created to perform cross-validation, which will provide additional information to estimate the out of sample error. Following this, two algorithms are used. In each case, a cross-validation method is specified with the trainControl() function along with the number of cross-validation folds (i.e., 3). The end of the section presents the confusion matrices and accuracy for the developed models and the tested predictions.
 
 1. Data Partition
 
@@ -144,7 +144,7 @@ Given the performance of the models the one developed with random forest is sele
 
 ## Conclusions
 
-Two models were developed with two different algorithms. Both performed well, having high accuracy. The model developed with random forest was selected given a better performance and 20 values were estimated according to it.
+Two models were developed with two different algorithms. Both performed well, having high accuracy. The model developed with random forest was selected given a better performance and 20 values were estimated according to it. The out of sample error estimated with cross-validation was  `r round((1-rf_cm_test$overall[1])*100,3)`% . Similarly, the estimated accuracy was  `r round((rf_cm_test$overall[1])*100,3)`%
 
 ## References
 

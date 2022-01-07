@@ -176,7 +176,7 @@ pre code {
 </div>
 <div id="loading-the-data-and-preprocessing" class="section level2">
 <h2>Loading the Data and preprocessing</h2>
-<p>The data is loaded and pre-processed to eliminate columns that will not contribute to the prediction. This includes: (1) columns with data to characterize the user, (2) columns with a majority of absent values, and (3) columns with zero or near to zero variance.</p>
+<p>The data is loaded and pre-processed to eliminate columns that will not contribute to the prediction. This includes: (1) columns with data to characterize the user, (2) columns with a majority of absent values (using a threshold of at list 95% of the values being different to NAs), and (3) columns with zero or near to zero variance.</p>
 <pre class="r"><code>library(knitr);library(magrittr);library(nnet);library(dplyr);library(caret)
 pml_train&lt;-read.csv(file=&quot;pml-training.csv&quot;,header=TRUE)
 pml_test&lt;-read.csv(file=&quot;pml-testing.csv&quot;,header=TRUE) # Load the data
@@ -230,7 +230,7 @@ pml_test_s&lt;-pml_test_s[,!(var_0$nzv |var_0$zeroVar)]</code></pre>
 </div>
 <div id="model" class="section level2">
 <h2>Model</h2>
-<p>To develop the model, two subsets are created to perform cross-validation, which will provide additional information to estimate the sample error. Following this, two algorithms are used. In each case, a cross-validation method is specified with the trainControl() function along with the number of cross-validation folds (i.e., 3). The end of the section presents the confusion matrices and accuracy for the developed models and the tested predictions.</p>
+<p>To develop the model, two subsets are created to perform cross-validation, which will provide additional information to estimate the out of sample error. Following this, two algorithms are used. In each case, a cross-validation method is specified with the trainControl() function along with the number of cross-validation folds (i.e., 3). The end of the section presents the confusion matrices and accuracy for the developed models and the tested predictions.</p>
 <ol style="list-style-type: decimal">
 <li>Data Partition</li>
 </ol>
@@ -644,7 +644,7 @@ prediction1&lt;-data.frame(pml_test$problem_id,test1)</code></pre>
 </div>
 <div id="conclusions" class="section level2">
 <h2>Conclusions</h2>
-<p>Two models were developed with two different algorithms. Both performed well, having high accuracy. The model developed with random forest was selected given a better performance and 20 values were estimated according to it.</p>
+<p>Two models were developed with two different algorithms. Both performed well, having high accuracy. The model developed with random forest was selected given a better performance and 20 values were estimated according to it. The out of sample error estimated with cross-validation was 0.493% . Similarly, the estimated accuracy was 99.507%</p>
 </div>
 <div id="references" class="section level2">
 <h2>References</h2>
