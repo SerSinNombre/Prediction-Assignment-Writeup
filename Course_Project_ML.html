@@ -177,18 +177,8 @@ pre code {
 <div id="loading-the-data-and-preprocessing" class="section level2">
 <h2>Loading the Data and preprocessing</h2>
 <p>The data is loaded and pre-processed to eliminate columns that will not contribute to the prediction. This includes: (1) columns with data to characterize the user, (2) columns with a majority of absent values, and (3) columns with zero or near to zero variance.</p>
-<pre class="r"><code>library(knitr);library(magrittr);library(nnet);library(dplyr);library(caret)</code></pre>
-<pre><code>## 
-## Attaching package: &#39;dplyr&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:stats&#39;:
-## 
-##     filter, lag</code></pre>
-<pre><code>## The following objects are masked from &#39;package:base&#39;:
-## 
-##     intersect, setdiff, setequal, union</code></pre>
-<pre><code>## Loading required package: ggplot2</code></pre>
-<pre><code>## Loading required package: lattice</code></pre>
-<pre class="r"><code>pml_train&lt;-read.csv(file=&quot;pml-training.csv&quot;,header=TRUE)
+<pre class="r"><code>library(knitr);library(magrittr);library(nnet);library(dplyr);library(caret)
+pml_train&lt;-read.csv(file=&quot;pml-training.csv&quot;,header=TRUE)
 pml_test&lt;-read.csv(file=&quot;pml-testing.csv&quot;,header=TRUE) # Load the data
 kable(summary(as.factor(pml_train$classe)))## table to see the data</code></pre>
 <table>

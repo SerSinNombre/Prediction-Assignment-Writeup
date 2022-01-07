@@ -18,34 +18,6 @@ The data is loaded and pre-processed to eliminate columns that will not contribu
 
 ```r
 library(knitr);library(magrittr);library(nnet);library(dplyr);library(caret)
-```
-
-```
-## 
-## Attaching package: 'dplyr'
-```
-
-```
-## The following objects are masked from 'package:stats':
-## 
-##     filter, lag
-```
-
-```
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union
-```
-
-```
-## Loading required package: ggplot2
-```
-
-```
-## Loading required package: lattice
-```
-
-```r
 pml_train<-read.csv(file="pml-training.csv",header=TRUE)
 pml_test<-read.csv(file="pml-testing.csv",header=TRUE) # Load the data
 kable(summary(as.factor(pml_train$classe)))## table to see the data
