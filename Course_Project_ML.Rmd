@@ -1,0 +1,169 @@
+---
+title: 'Prediction Assignment Writeup'
+subtitle: 'Author: S. Jiménez Ariza'
+output:
+  html_document:
+    keep_md: yes
+  pdf_document: default
+---
+## Executive Summary
+This document presents a model to predict how people exercise. To this aim, an analysis of the data from accelerometers on the belt, forearm, arm, and dumbbell of 6 people is performed. As described in Velloso et al. (2013), the five considered classes are: A, exactly according to the specification; B, throwing the elbows to the front; C, lifting the dumbbell only halfway; D, lowering the dumbbell only halfway; and E, throwing the hips to the front.
+
+Two models are tested following two algorithms (i.e., random forest and boosting). In each case, a cross-validation method is included in the development of the model. Additionally, the training data is divided into two sets to test the results. Due to the better performance of random forest, this model is selected to predict the class that describes the exercise. 
+
+## Loading the Data and preprocessing
+
+The data is loaded and pre-processed to eliminate columns that will not contribute to the prediction. This includes: (1) columns with data to characterize the user, (2) columns with a majority of absent values, and (3) columns with zero or near to zero variance.
+
+```{r loadData,echo=TRUE, warning=FALSE}
+library(knitr);library(magrittr);library(nnet);library(dplyr);library(caret)
+pml_train<-read.csv(file="pml-training.csv",header=TRUE)
+pml_test<-read.csv(file="pml-testing.csv",header=TRUE) # Load the data
+kable(summary(as.factor(pml_train$classe)))## table to see the data
+
+```
+
+```{r processData,echo=TRUE,warning=FALSE}
+#Columns without data to analyse movement are discarded
+
+pml_train_s<-pml_train[,8:dim(pml_train)[2]]
+pml_test_s<-pml_test[,8:dim(pml_test)[2]]
+
+#Columns without enough information are discarded
+pml_train_s<-pml_train_s %>% mutate_at(c(1:dim(pml_train_s)[2]-1), as.numeric)
+pml_test_s<-pml_test_s %>% mutate_at(c(1:dim(pml_test_s)[2]), as.numeric)
+col_data<-colSums(is.na(pml_train_s)) <= dim(pml_train)[1]*0.95
+pml_train_s<-pml_train_s[,col_data]
+pml_test_s<-pml_test_s[,col_data]
+
+#Variables with variance zero or near to zero are discarded
+var_0<-nearZeroVar(pml_train_s, saveMetrics = TRUE)
+pml_train_s<-pml_train_s[,!(var_0$nzv |var_0$zeroVar)]
+pml_test_s<-pml_test_s[,!(var_0$nzv |var_0$zeroVar)]
+
+```
+
+## Model
+To develop the model, two subsets are created to perform cross-validation, which will provide additional information to estimate the sample error. Following this, two algorithms are used. In each case, a cross-validation method is specified with the trainControl() function along with the number of cross-validation folds (i.e., 3). The end of the section presents the confusion matrices and accuracy for the developed models and the tested predictions.
+
+1. Data Partition
+
+```{r DataPart,echo=TRUE}
+
+set.seed(12345)
+training<-createDataPartition(y=pml_train_s$classe, p=0.7,list=FALSE)
+pml_train_train<-pml_train_s[training,]
+pml_train_test<-pml_train_s[-training,]
+
+```
+
+2. Model building
+
+2.1. Random forest
+
+```{r RadomForest,echo=TRUE}
+# Random forest
+set.seed(12345)
+mod1<-train(classe~.,method="rf",data=pml_train_train,trControl=trainControl(method="cv",number=3))
+rf_cm<-confusionMatrix(mod1)
+```
+
+2.2. Boosting
+
+```{r Boosting,echo=TRUE}
+#Boosting
+set.seed(12345)
+mod2<-train(classe ~ ., method="gbm",data=pml_train_train,verbose=FALSE,trControl=trainControl(method="cv",number=3))
+b_cm<-confusionMatrix(mod2)
+```
+
+3.3. Summary models
+```{r ResultsModels,echo=TRUE}
+#Boosting
+results<- data.frame(
+        Model = c('Random Forest', 'Boosting'),
+        Accuracy = rbind(mod1$results[which(as.numeric(mod1$bestTune) == mod1$results),2], max(mod2$results[5]))
+)
+```
+
+The confusion matrix of the model developed with the random forest algorithm is:
+
+`r kable(rf_cm$table)`
+
+And the confusion matrix developed with the boosting algorithm is:
+
+`r kable(b_cm$table)`
+
+As a result the accuracy of both models is presented in the next table:
+
+`r kable(results)`
+
+4. Testing
+
+```{r Testing,echo=TRUE}
+# Random forest
+pred1<-predict(mod1,pml_train_test)
+rf_cm_test <- confusionMatrix(pred1, as.factor(pml_train_test$classe))
+#sqrt(sum((pred1!=pml_train_test$classe)^2))
+#Boosting
+pred2<-predict(mod2,pml_train_test)
+b_cm_test <- confusionMatrix(pred2, as.factor(pml_train_test$classe))
+#sqrt(sum((pred2!=pml_train_test$classe)^2))
+results_test<- data.frame(
+        Model = c('Random Forest', 'Boosting'),
+        Accuracy = rbind(rf_cm_test$overall[1], b_cm_test$overall[1]),
+        AccuracyLower = rbind(rf_cm_test$overall[3], b_cm_test$overall[3]),
+        AccuracyUpper = rbind(rf_cm_test$overall[4], b_cm_test$overall[4])
+)
+
+```
+
+When the model is tested with the available data the resulting confusion matrices are:
+
+1. Random forest
+`r kable(rf_cm_test$table)`
+2. Boosting
+`r kable(b_cm_test$table)`
+
+The accuracy of both models is summarized in the next table:
+`r (kable(results_test))`
+
+Given the results the model developed with the random forest algorithm is selected and the expected out of sample error is `r round((1-rf_cm_test$overall[1])*100,3)`%
+
+## Prediction
+
+```{r Prediction,echo=TRUE}
+# Random forest
+test1<-predict(mod1,pml_test)
+prediction1<-data.frame(pml_test$problem_id,test1)
+```
+
+Given the performance of the models the one developed with random forest is selected. The predicted values are presented in the next table:
+
+`r kable(prediction1)`
+
+## Conclusions
+
+Two models were developed with two different algorithms. Both performed well, having high accuracy. The model developed with random forest was selected given a better performance and 20 values were estimated according to it.
+
+## References
+
+Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013.
+
+## Appendix
+
+The characteristics of the model are summarized in this section:
+
+1. Results:
+`r kable(mod1$results)`
+2. Number of variables tried at each split (final model): `r as.numeric(mod1$finalModel$mtry)`
+3. Importance of the variables (final model):
+```{r ImportanceV,echo=FALSE}
+mod1_ordenado <- mod1$finalModel$importance[order(mod1$finalModel$importance,decreasing = TRUE), ]
+```
+
+`r kable(mod1_ordenado)`
+
+4. Confusion Matrix (final model):
+
+`r kable( mod1$finalModel$confusion)`
